@@ -2,7 +2,9 @@ package controller
 
 import (
 	"fetchTest/common"
+	"fetchTest/dto"
 	"fetchTest/model"
+	"fetchTest/response"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"log"
@@ -33,23 +35,13 @@ func Register(c *gin.Context) {
 
 	if res, matchErr := validEmail(email); res == false || matchErr != nil {
 		if matchErr != nil {
-			c.JSON(500, gin.H{
-				"code":    500,
-				"message": "Email matching fail",
-			})
+			response.Response(c, http.StatusInternalServerError, 500, nil, "Email matching fail")
 		}
-		c.JSON(422, gin.H{
-			"code":    422,
-			"message": "Email invalid",
-		})
+		response.Response(c, http.StatusUnprocessableEntity, 422, nil, "Email invalid")
 		return
 	}
-
 	if isEmailExisted(db, email) {
-		c.JSON(422, gin.H{
-			"code":    422,
-			"message": "Register failed,email existed.",
-		})
+		response.Response(c, http.StatusUnprocessableEntity, 422, nil, "Register failed,email existed.")
 		return
 	}
 	newUser := model.User{
@@ -58,10 +50,7 @@ func Register(c *gin.Context) {
 		Password: password,
 	}
 	db.Create(&newUser)
-	c.JSON(200, gin.H{
-		"message": "Successfully register",
-		"code":    200,
-	})
+	response.Success(c, nil, "Successfully register")
 }
 func Login(c *gin.Context) {
 	db := common.GetDB()
@@ -71,28 +60,22 @@ func Login(c *gin.Context) {
 	loginUser := getUserByEmail(db, email)
 
 	if loginUser.ID == 0 {
-		c.JSON(422, gin.H{
-			"code":    422,
-			"message": "Login failed,email not exist",
-		})
+		response.Response(c, http.StatusUnprocessableEntity, 422, nil, "Login failed,email not exist")
 		return
 	}
 	if loginUser.Password != password {
-		c.JSON(400, gin.H{
-			"code":    400,
-			"message": "Wrong password",
-		})
+		response.Fail(c, nil, "Wrong password")
 		return
 	}
 	token, tokenGenErr := common.ReleaseToken(loginUser)
 	if tokenGenErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": "token generation failed"})
+		response.Response(c, http.StatusInternalServerError, 500, nil, "token generation failed")
 		log.Println("token generation failed", tokenGenErr.Error())
 		return
 	}
-	c.JSON(200, gin.H{
-		"code":    200,
-		"message": "Successfully login",
-		"data":    gin.H{"token": token},
-	})
+	response.Success(c, gin.H{"token": token}, "Successfully login")
+}
+func Info(c *gin.Context) {
+	user, _ := c.Get("user")
+	response.Success(c, gin.H{"code": 200, "data": gin.H{"user": dto.ToUserDto(user.(model.User))}}, "UserInfo request successfully")
 }
