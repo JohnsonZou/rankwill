@@ -2,8 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"fetchTest/ginTest"
-	_ "fetchTest/ginTest"
+	"fetchTest/server"
+	_ "fetchTest/server"
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	_ "github.com/PuerkitoBio/goquery"
@@ -41,8 +41,7 @@ const (
 )
 
 func main() {
-	ginTest.GinRun()
-
+	server.GinRun()
 	//ChannelStart("weekly-contest-333")
 	//Predict()
 }
