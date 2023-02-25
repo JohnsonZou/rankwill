@@ -30,6 +30,8 @@ func InitDB() *gorm.DB {
 		panic("fail to connect database,err: " + err.Error())
 	}
 	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.Contest{})
+	db.AutoMigrate(&model.Contestant{})
 	DB = db
 	return db
 }
