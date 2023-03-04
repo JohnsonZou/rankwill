@@ -32,6 +32,7 @@ func InitDB() *gorm.DB {
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Contest{})
 	db.AutoMigrate(&model.Contestant{})
+	db.AutoMigrate(&model.Following{})
 	DB = db
 	return db
 }

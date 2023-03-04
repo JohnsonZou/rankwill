@@ -5,7 +5,7 @@ import "gorm.io/gorm"
 type Contestant struct {
 	gorm.Model
 	Contestname          string  `gorm:"type:varchar(30);not null"`
-	Username             string  `gorm:"type:varchar(50);not null"`
+	Username             string  `gorm:"type:varchar(100);not null"`
 	Rank                 int     `gorm:"type:int;not null"`
 	Finish_time          int64   `gorm:"type:bigint"`
 	Data_region          string  `gorm:"type:varchar(5)"`

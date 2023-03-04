@@ -12,6 +12,7 @@ import (
 
 func GinRun() {
 	InitConfig()
+	_ = common.InitRedis()
 	_ = common.InitDB()
 	r := gin.Default()
 	r = router.CollectRoute(r)

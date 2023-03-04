@@ -17,6 +17,11 @@ func isEmailExisted(db *gorm.DB, email string) bool {
 	db.Where("email=?", email).First(&user)
 	return user.ID != 0
 }
+func isFollowExisted(db *gorm.DB, uname string, lcusername string) bool {
+	var fl model.Following
+	db.Where("username=?", uname).Where("lcusername=?", lcusername).First(&fl)
+	return fl.ID != 0
+}
 func getUserByEmail(db *gorm.DB, email string) model.User {
 	var user model.User
 	db.Where("email=?", email).First(&user)
@@ -58,7 +63,6 @@ func Login(c *gin.Context) {
 	password := c.PostForm("password")
 	log.Println(email, password)
 	loginUser := getUserByEmail(db, email)
-
 	if loginUser.ID == 0 {
 		response.Response(c, http.StatusUnprocessableEntity, 422, nil, "Login failed,email not exist")
 		return
@@ -75,7 +79,47 @@ func Login(c *gin.Context) {
 	}
 	response.Success(c, gin.H{"token": token}, "Successfully login")
 }
+
 func Info(c *gin.Context) {
 	user, _ := c.Get("user")
 	response.Success(c, gin.H{"code": 200, "data": gin.H{"user": dto.ToUserDto(user.(model.User))}}, "UserInfo request successfully")
 }
+
+func Follow(c *gin.Context) {
+	user, _ := c.Get("user")
+	uname := user.(model.User).Username
+	lcusername := c.PostForm("username")
+	if lcusername == "" {
+		response.Fail(c, nil, "Empty leetcode username")
+		return
+	}
+	db := common.GetDB()
+	if isFollowExisted(db, uname, lcusername) {
+		response.Fail(c, nil, "Duplicated follow")
+		return
+	}
+	f := model.Following{
+		Username:   uname,
+		Lcusername: lcusername,
+	}
+	db.Create(&f)
+	response.Success(c, nil, "Successfully follow")
+}
+func Unfollow(c *gin.Context) {
+	user, _ := c.Get("user")
+	uname := user.(model.User).Username
+	lcusername := c.PostForm("username")
+	if lcusername == "" {
+		response.Fail(c, nil, "Empty leetcode username")
+		return
+	}
+	db := common.GetDB()
+	if isFollowExisted(db, uname, lcusername) {
+		db.Where("username=?", uname).Where("lcusername=?", lcusername).Delete(&model.Following{})
+		response.Success(c, nil, "Successfully unfollow")
+		return
+	}
+	response.Fail(c, nil, "Leetcode user not exist")
+}
+
+//func GetFollowing

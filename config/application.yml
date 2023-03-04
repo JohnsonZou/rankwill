@@ -8,3 +8,6 @@ datasource:
   username: root
   password: 123456
   charset: utf8mb4
+redisconfig:
+  address: localhost:6379
+  password:
